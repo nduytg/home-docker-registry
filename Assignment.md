@@ -3,14 +3,14 @@
 ## Main task
 
 Write the Kubernetes deployment manifest to run Docker Registry in Kubernetes with at least the following resources:
-[] deployment
-[] service
-[] persistent volume claim
-[] garbage collect cron job
-[] ingress
-[] secret (if needed). 
-[] configmap (added)
-[] self-signed ssl (added)
+* deployment
+* service
+* persistent volume claim
+* garbage collect cron job
+* ingress
+* secret (if needed). 
+* configmap (added)
+* self-signed ssl (added)
 
 Make sure Docker Registry uses Redis for cache and look into the possibility to run 2 replicas of Docker Registry for redundancy.
 

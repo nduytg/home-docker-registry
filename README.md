@@ -2,7 +2,20 @@
 Build your own Docker Registry on K8s from scratch
 
 Author: nduytg@gmail.com
+
 Github: github.com/nduytg
+
+## Requirements
+
+Write the Kubernetes deployment manifest to run Docker Registry in Kubernetes with at least the following resources:
+[x] deployment
+[x] service
+[] persistent volume claim
+[] garbage collect cron job
+[] ingress
+[] secret (if needed). 
+[] configmap (added)
+[] self-signed ssl (added)
 
 ## Preparation - Setup local K8s env by Minikube
 
