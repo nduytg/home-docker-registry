@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: docker-registry-pvc
+spec:
+  storageClassName: slow
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi # Request 5/10GB, can expand later
+  selector:
+    matchLabels:
+      workload: "docker-registry" # Specifically set the PVC to this PV, instead of allowing k8s to auto-allocate

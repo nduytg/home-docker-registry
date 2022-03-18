@@ -9,4 +9,4 @@ spec:
   ports:
   - port: 8080
     targetPort: 5000
-    #nodePort: 30080
+    # nodePort: 30080
