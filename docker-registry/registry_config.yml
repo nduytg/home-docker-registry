@@ -1,0 +1,33 @@
+version: 0.1
+log:
+  level: debug
+http:
+  addr: :5000
+storage:
+  cache:
+    blobdescriptor: inmemory
+  filesystem:
+    rootdirectory: /var/lib/registry
+  delete:
+    enabled: true
+auth:
+  openshift:
+    realm: openshift
+middleware:
+  registry:
+    - name: openshift
+  repository:
+    - name: openshift
+      options:
+        acceptschema2: true
+        pullthrough: true
+        enforcequota: false
+        projectcachettl: 1m
+        blobrepositorycachettl: 10m
+  storage:
+    - name: openshift
+openshift:
+  version: 1.0
+  metrics:
+    enabled: false
+    secret: <secret>

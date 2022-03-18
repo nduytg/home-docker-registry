@@ -3,7 +3,7 @@ Build your own Docker Registry on K8s from scratch
 
 Author: nduytg@gmail.com
 
-Github: github.com/nduytg
+Github: [github.com/nduytg](github.com/nduytg)
 
 ## Requirements
 
@@ -11,11 +11,11 @@ Write the Kubernetes deployment manifest to run Docker Registry in Kubernetes wi
 - [x] deployment
 - [x] service
 - [x] persistent volume claim
-- [] garbage collect cron job
-- [] ingress
-- [] secret (if needed). 
-- [] configmap (added)
-- [] self-signed ssl (added)
+- [ ] garbage collect cron job
+- [ ] ingress
+- [ ] secret (if needed). 
+- [ ] configmap (added)
+- [ ] self-signed ssl (added)
 
 ## Preparation - Setup local K8s env by Minikube
 
@@ -87,6 +87,8 @@ kubernetes        ClusterIP      10.96.0.1       <none>          443/TCP        
 Using default tag: latest
 The push refers to repository [10.103.70.188:8080/myfirstimage]
 Get "https://10.103.70.188:8080/v2/": http: server gave HTTP response to HTTPS client
+
+^ Does not work because we dont have SSL certs yet! Let's add one!
 
 ```
 
@@ -234,4 +236,5 @@ https://docs.docker.com/registry/storage-drivers/
 
 https://hub.docker.com/_/registry
 
+https://docs.docker.com/registry/garbage-collection/
 
