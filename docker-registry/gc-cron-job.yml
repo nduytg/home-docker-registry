@@ -1,3 +1,4 @@
+---
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -8,22 +9,22 @@ spec:
     spec:
       template:
         spec:
-            containers:
+          containers:
             - name: registry-gc
               image: registry:2
               env:
-              - name: REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY
-                value: "/var/lib/registry"
+                - name: REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY
+                  value: "/var/lib/registry"
               imagePullPolicy: IfNotPresent
               command:
                 - /bin/sh
                 - -c
                 - registry garbage-collect /etc/docker/registry/config.yml
               volumeMounts:
-              - name: docker-registry-storage
-                mountPath: /var/lib/registry
-            volumes:
+                - name: docker-registry-storage
+                  mountPath: /var/lib/registry
+          volumes:
             - name: docker-registry-storage
               persistentVolumeClaim:
                 claimName: docker-registry-pvc
-            restartPolicy: OnFailure
+          restartPolicy: OnFailure

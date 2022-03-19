@@ -224,6 +224,7 @@ Use dragonfly as daemon set on each node to speed up image distribution time & o
 # TODO
 1. Add yaml lint checker
 2. Add Github actions
+3. Add prehooks
 
 
 # Reference
@@ -238,3 +239,4 @@ https://hub.docker.com/_/registry
 
 https://docs.docker.com/registry/garbage-collection/
 
+https://github.com/marketplace/actions/yamllint-github-action

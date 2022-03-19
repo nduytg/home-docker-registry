@@ -1,3 +1,4 @@
+---
 apiVersion: v1
 kind: Pod
 metadata:
@@ -5,16 +6,15 @@ metadata:
   namespace: default
 spec:
   containers:
-  - image: busybox
-    command:
-    - sleep
-    - "3600"
-    imagePullPolicy: IfNotPresent
-    name: busybox
-
-    volumeMounts:
-    - name: docker-registry-storage # Test to see if another pod on same node can access the shared pvc
-      mountPath: /data
+    - image: busybox
+      command:
+        - sleep
+        - "3600"
+      imagePullPolicy: IfNotPresent
+      name: busybox
+      volumeMounts:
+        - name: docker-registry-storage
+          mountPath: /data
   restartPolicy: Always
   volumes:
     - name: docker-registry-storage
