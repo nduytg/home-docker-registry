@@ -15,15 +15,39 @@ spec:
       labels:
         app: docker-registry
     spec:
+      volumes:
+        - name: docker-registry-storage
+          persistentVolumeClaim:
+            claimName: docker-registry-pvc
+        - name: secret-volume
+          secret:
+            secretName: registry-certs-keys 
+        - name: auth-volume
+          secret:
+            secretName: registry-htpasswd
+
       containers:
         - name: registry
           image: registry:2
+          env:
+            - name: REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY
+              value: "/var/lib/registry"
+            - name: REGISTRY_AUTH
+              value: "htpasswd"
+            - name: REGISTRY_AUTH_HTPASSWD_REALM
+              value: "Registry Realm"
+            - name: REGISTRY_AUTH_HTPASSWD_PATH
+              value: /auth/htpasswd
+            - name: REGISTRY_HTTP_TLS_CERTIFICATE
+              value: /certs/registry.crt 
+            - name: REGISTRY_HTTP_TLS_KEY
+              value: /certs/registry.key
           ports:
             - containerPort: 5000
           volumeMounts:
             - name: docker-registry-storage
               mountPath: /var/lib/registry
-      volumes:
-        - name: docker-registry-storage
-          persistentVolumeClaim:
-            claimName: docker-registry-pvc
+            - mountPath: /certs
+              name: secret-volume
+            - mountPath: /auth
+              name: auth-volume

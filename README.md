@@ -11,11 +11,10 @@ Write the Kubernetes deployment manifest to run Docker Registry in Kubernetes wi
 - [x] deployment
 - [x] service
 - [x] persistent volume claim
-- [ ] garbage collect cron job
+- [x] garbage collect cron job
 - [ ] ingress
-- [ ] secret (if needed). 
-- [ ] configmap (added)
-- [ ] self-signed ssl (added)
+- [x] secret (if needed). 
+- [x] configmap (added)
 
 ## Preparation - Setup local K8s env by Minikube
 
@@ -209,8 +208,32 @@ Apply the changes
 k apply -f docker-registry/deployment.yml
 ```
 
+## Create self-signed cert
+
+```bash
+# Create certs
+openssl req -newkey rsa:4096 -nodes -keyout ./certs/registry.key -x509 -days 365 -out ./certs/registry.crt
+
+# Create secrets
+k create secret generic registry-certs-keys --from-file=./certs/registry.crt --from-file=./certs/registry.key 
+
+# Create basic auth file
+docker run \
+  --entrypoint htpasswd \
+  httpd:2 -Bbn duyuser password123456 > auth/htpasswd
+
+# Create secret for auth file
+k create secret generic registry-htpasswd --from-file=./auth/htpasswd
+
+
+```
+
 ## Redis configuration + Replica set
 
+
+## Notes
+
+If the registry is empty, the cronjob will fail!!!
 
 # Encountered issues
 1. Minikube does not expose the service port correctly by default on Mac. It always return 127.0.0.1 as external IP. We can force it to use virtualbox driver to fix this. Source: https://github.com/kubernetes/minikube/issues/7344
@@ -240,3 +263,5 @@ https://hub.docker.com/_/registry
 https://docs.docker.com/registry/garbage-collection/
 
 https://github.com/marketplace/actions/yamllint-github-action
+
+https://kubernetes.github.io/ingress-nginx/examples/docker-registry/

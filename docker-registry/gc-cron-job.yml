@@ -9,12 +9,19 @@ spec:
     spec:
       template:
         spec:
+          volumes:
+            - name: docker-registry-storage
+              persistentVolumeClaim:
+                claimName: docker-registry-pvc
+
           containers:
             - name: registry-gc
               image: registry:2
               env:
                 - name: REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY
                   value: "/var/lib/registry"
+                - name: REGISTRY_AUTH
+                  value: "htpasswd"
               imagePullPolicy: IfNotPresent
               command:
                 - /bin/sh
@@ -23,8 +30,4 @@ spec:
               volumeMounts:
                 - name: docker-registry-storage
                   mountPath: /var/lib/registry
-          volumes:
-            - name: docker-registry-storage
-              persistentVolumeClaim:
-                claimName: docker-registry-pvc
           restartPolicy: OnFailure
