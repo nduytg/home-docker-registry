@@ -351,9 +351,9 @@ be96a3f634de: Pushed
 
 ## Redis configuration + Replica set
 
-k apply -f redis/
-
 ```bash
+❯ k apply -f redis/
+
 ❯ k exec -it redis -- redis-cli
 127.0.0.1:6379> CONFIG GET maxmemory
 1) "maxmemory"
@@ -361,7 +361,7 @@ k apply -f redis/
 127.0.0.1:6379> 
 ```
 
-Important notes for Redis configuration
+Important notes for Redis configuration to make it work with multiple replicas
 * Need to set a HTTP secret
 * Set storage.cache.blobdescriptor: redis
 * Set redis addr in registry configuration
@@ -406,9 +406,9 @@ time="2022-03-20T06:54:33.404872485Z" level=info msg="response completed" go.ver
 
 # Further improvements
 
-0. Can change to use NFS + PVC ReadWriteMany when we have multiple nodes
+0. Storage Option 1: Can change to use NFS + PVC ReadWriteMany when we have multiple nodes
 
-1. Use [S3](https://docs.docker.com/registry/storage-drivers/) as backend driver for Docker registry
+1. Storage Option 2: Use [S3](https://docs.docker.com/registry/storage-drivers/) as backend driver for Docker registry
 
 2. Use dragonfly as daemon set on each node to speed up image distribution time & offload traffic to docker-registry
 
@@ -419,6 +419,10 @@ time="2022-03-20T06:54:33.404872485Z" level=info msg="response completed" go.ver
 5. Change the Auth method to Token, instead of htpasswd
 
 6. Enable Docker proxy feature, cache dockerhub image on local to avoid the Dockerhub rate limit issue
+
+7. Review the pod resources limit + namespace setup
+
+8. Do security hardening for the service
 
 # Reference
 
