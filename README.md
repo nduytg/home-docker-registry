@@ -14,8 +14,8 @@ Write the Kubernetes deployment manifest to run Docker Registry in Kubernetes wi
 - [x] garbage collect cron job
 - [x] ingress
 - [x] secret (if needed). 
-- [] Redis
-- [] Increase replica count
+- [x] Redis
+- [x] Increase replicas
 
 ## Preparation - Setup local K8s env by Minikube
 
@@ -352,9 +352,39 @@ Important notes for Redis configuration
 * Set storage.cache.blobdescriptor: redis
 * Set redis addr in registry configuration
 
+```bash
 k apply -f docker-registry/registry-config.yml
 k apply -f docker-registry/deployment.yml
+```
 
+Ideally, we will see something like this
+
+```bash
+# In redis
+127.0.0.1:6379> keys *
+ 1) "repository::redis::blobs::sha256:04ab1bfc453f19989c401c2f0622df3363b5182bdea1af9e59ee2ceea3a9931c"
+ 2) "blobs::sha256:961b8e95c0f4561047ea48e53e564dae6a4e4b5d3334579a0344af2b04ecb3f9"
+ 3) "repository::grafana::blobs::sha256:dae972374a52168fce7ad44c1f169b6ae65ffa5e1c43d93b78abffa43207925e"
+ 4) "blobs::sha256:29b14abb751a5802c3b7174e21ed6aa8486627788969e4214a2c90147fef056f"
+ 5) "blobs::sha256:cdd789ccb9ea8c941d008916c02350057379875d56187e95a0d9ee823d3e2f6f"
+ 6) "blobs::sha256:54fec2fa59d0a0de9cd2dec9850b36c43de451f1fd1c0a5bf8f1cf26a61a5da4"
+ 7) "repository::alpine::blobs::sha256:3d243047344378e9b7136d552d48feb7ea8b6fe14ce0990e0cc011d5e369626a"
+....
+```
+
+Registry container logs
+```bash
+# On pod 1
+172.17.0.2 - - [20/Mar/2022:06:54:33 +0000] "HEAD /v2/grafana/blobs/sha256:cdd789ccb9ea8c941d008916c02350057379875d56187e95a0d9ee823d3e2f6f HTTP/1.1" 200 0 "" "docker/20.10.8 go/go1.16.6 git-commit/75249d8 kernel/5.10.47-linuxkit os/linux arch/amd64 UpstreamClient(Docker-Client/20.10.8 \\(darwin\\))"
+172.17.0.2 - - [20/Mar/2022:06:54:33 +0000] "PUT /v2/grafana/manifests/latest HTTP/1.1" 201 0 "" "docker/20.10.8 go/go1.16.6 git-commit/75249d8 kernel/5.10.47-linuxkit os/linux arch/amd64 UpstreamClient(Docker-Client/20.10.8 \\(darwin\\))"
+time="2022-03-20T06:54:33.490089529Z" level=info msg="response completed" go.version=go1.16.15 http.request.contenttype="application/vnd.docker.distribution.manifest.v2+json" http.request.host=registry.duy.io http.request.id=18977836-a222-4910-b455-f94516c89538 http.request.method=PUT http.request.remoteaddr=192.168.64.1 http.request.uri="/v2/grafana/manifests/latest" http.request.useragent="docker/20.10.8 go/go1.16.6 git-commit/75249d8 kernel/5.10.47-linuxkit os/linux arch/amd64 UpstreamClient(Docker-Client/20.10.8 \(darwin\))" http.response.duration=16.337273ms http.response.status=201 http.response.written=0
+
+
+# On pod 2
+172.17.0.2 - - [20/Mar/2022:06:54:33 +0000] "HEAD /v2/grafana/blobs/sha256:cdd789ccb9ea8c941d008916c02350057379875d56187e95a0d9ee823d3e2f6f HTTP/1.1" 404 157 "" "docker/20.10.8 go/go1.16.6 git-commit/75249d8 kernel/5.10.47-linuxkit os/linux arch/amd64 UpstreamClient(Docker-Client/20.10.8 \\(darwin\\))"
+172.17.0.2 - - [20/Mar/2022:06:54:33 +0000] "PATCH /v2/grafana/blobs/uploads/4ce77739-d321-45be-b0b1-4949208c0743?_state=3ET9AKLzACngAL8hRjVGHMtQYKZA6eW_LmUroIL_yIV7Ik5hbWUiOiJncmFmYW5hIiwiVVVJRCI6IjRjZTc3NzM5LWQzMjEtNDViZS1iMGIxLTQ5NDkyMDhjMDc0MyIsIk9mZnNldCI6MCwiU3RhcnRlZEF0IjoiMjAyMi0wMy0yMFQwNjo1NDozMy4zNzA4NzM4MDlaIn0%3D HTTP/1.1" 202 0 "" "docker/20.10.8 go/go1.16.6 git-commit/75249d8 kernel/5.10.47-linuxkit os/linux arch/amd64 UpstreamClient(Docker-Client/20.10.8 \\(darwin\\))"
+time="2022-03-20T06:54:33.404872485Z" level=info msg="response completed" go.version=go1.16.15 http.request.host=registry.duy.io http.request.id=667435cf-420d-4c04-80fc-f9e211673b31 http.request.method=PATCH http.request.remoteaddr=192.168.64.1 http.request.uri="/v2/grafana/blobs/uploads/4ce77739-d321-45be-b0b1-4949208c0743?_state=3ET9AKLzACngAL8hRjVGHMtQYKZA6eW_LmUroIL_yIV7Ik5hbWUiOiJncmFmYW5hIiwiVVVJRCI6IjRjZTc3NzM5LWQzMjEtNDViZS1iMGIxLTQ5NDkyMDhjMDc0MyIsIk9mZnNldCI6MCwiU3RhcnRlZEF0IjoiMjAyMi0wMy0yMFQwNjo1NDozMy4zNzA4NzM4MDlaIn0%3D" http.request.useragent="docker/20.10.8 go/go1.16.6 git-commit/75249d8 kernel/5.10.47-linuxkit os/linux arch/amd64 UpstreamClient(Docker-Client/20.10.8 \(darwin\))" http.response.duration=5.384046ms http.response.status=202 http.response.written=0
+```
 
 ## Notes
 
@@ -364,6 +394,8 @@ If the registry is empty, the cronjob will fail!!!
 1. Minikube does not expose the service port correctly by default on Mac. It always return 127.0.0.1 as external IP. We can force it to use virtualbox driver to fix this. Source: https://github.com/kubernetes/minikube/issues/7344
 
 # Further improvements
+
+0. Can change to use NFS + PVC ReadWriteMany when we have multiple nodes
 
 1. Use [S3](https://docs.docker.com/registry/storage-drivers/) as backend driver for Docker registry
 
