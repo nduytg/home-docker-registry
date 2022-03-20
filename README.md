@@ -11,6 +11,10 @@ Github: [github.com/nduytg](github.com/nduytg)
 # Start minikube with virtualbox driver, wait for 5mins
 minikube start --driver=virtualbox
 
+# Create new secrets
+kubectl create secret tls registry-ingress --key ./ingress-certs/registry-ingress.key --cert ./ingress-certs/registry-ingress.crt
+
+# Apply all config
 k apply -f redis/
 k apply -f docker-registry/
 ```
@@ -292,11 +296,11 @@ We need to create new certs (the same way we did with the cert in registry deplo
 
 Let's go!!
 
-```
+```bash
 # Create cert by openssl
 openssl req -newkey rsa:4096 -nodes -keyout ./ingress-certs/registry-ingress.key -x509 -days 365 -out ./ingress-certs/registry-ingress.crt -subj "/CN=registry.duy.io/O=registry.duy.io"
 
-# Create new secret
+# Create new secrets
 kubectl create secret tls registry-ingress --key ./ingress-certs/registry-ingress.key --cert ./ingress-certs/registry-ingress.crt
 ```
 
