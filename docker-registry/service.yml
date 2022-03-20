@@ -1,3 +1,4 @@
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -7,6 +8,5 @@ spec:
   selector:
     app: docker-registry
   ports:
-  - port: 8080
-    targetPort: 5000
-    # nodePort: 30080
+    - port: 8080
+      targetPort: 5000
