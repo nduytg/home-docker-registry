@@ -337,6 +337,24 @@ be96a3f634de: Pushed
 
 ## Redis configuration + Replica set
 
+k apply -f redis/
+
+```bash
+❯ k exec -it redis -- redis-cli
+127.0.0.1:6379> CONFIG GET maxmemory
+1) "maxmemory"
+2) "209715200"
+127.0.0.1:6379> 
+```
+
+Important notes for Redis configuration
+* Need to set a HTTP secret
+* Set storage.cache.blobdescriptor: redis
+* Set redis addr in registry configuration
+
+k apply -f docker-registry/registry-config.yml
+k apply -f docker-registry/deployment.yml
+
 
 ## Notes
 
