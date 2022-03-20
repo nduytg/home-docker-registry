@@ -46,4 +46,3 @@ spec:
               name: auth-volume
             - name: config
               mountPath: /etc/docker/registry/
-              

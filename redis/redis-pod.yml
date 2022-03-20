@@ -19,8 +19,8 @@ spec:
         - containerPort: 6379
       resources:
         limits:
-            cpu: 200m
-            memory: 200Mi
+          cpu: 200m
+          memory: 200Mi
       volumeMounts:
         - mountPath: /redis-master-data
           name: data
