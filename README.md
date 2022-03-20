@@ -400,11 +400,55 @@ time="2022-03-20T06:54:33.490089529Z" level=info msg="response completed" go.ver
 time="2022-03-20T06:54:33.404872485Z" level=info msg="response completed" go.version=go1.16.15 http.request.host=registry.duy.io http.request.id=667435cf-420d-4c04-80fc-f9e211673b31 http.request.method=PATCH http.request.remoteaddr=192.168.64.1 http.request.uri="/v2/grafana/blobs/uploads/4ce77739-d321-45be-b0b1-4949208c0743?_state=3ET9AKLzACngAL8hRjVGHMtQYKZA6eW_LmUroIL_yIV7Ik5hbWUiOiJncmFmYW5hIiwiVVVJRCI6IjRjZTc3NzM5LWQzMjEtNDViZS1iMGIxLTQ5NDkyMDhjMDc0MyIsIk9mZnNldCI6MCwiU3RhcnRlZEF0IjoiMjAyMi0wMy0yMFQwNjo1NDozMy4zNzA4NzM4MDlaIn0%3D" http.request.useragent="docker/20.10.8 go/go1.16.6 git-commit/75249d8 kernel/5.10.47-linuxkit os/linux arch/amd64 UpstreamClient(Docker-Client/20.10.8 \(darwin\))" http.response.duration=5.384046ms http.response.status=202 http.response.written=0
 ```
 
+## Optional task
+
+Write retention script to clean old tags
+
+### How to use
+
+Run directly
+```bash
+cd retention-script
+
+go run main.go
+```
+
+Build binary (need to set env for different OSes)
+```bash
+cd retention-script
+mkdir bin
+
+env GOOS=darmin GOARCH=amd64 go build -o ./bin/retention ./main.go
+
+env GOOS=linux GOARCH=amd64 go build -o ./bin/retention ./main.go
+```
+
+### Ideas
+Some ideas for the retention scripts
+
+1. Define a rule list for each service, how many latest tags we will keep
+2. Scan through all repo, if the repo in the rule list
+3. Get all tags of that repo
+4. Delete (total_tags - num_latest_tags)
+
+After deleting the tag, we can wait for the GC to collect the disk space
+
+Otherwise, we can also delete the disk space manually by ourselves, based on the digest of images
+
 # Encountered issues
 1. Minikube does not expose the service port correctly by default on Mac. It always return 127.0.0.1 as external IP. We can force it to use virtualbox driver to fix this. Source: https://github.com/kubernetes/minikube/issues/7344
 2. If the registry is empty, the GC cronjob will fail!! Because there is no docker directory in that volume yet!
+3. Encountering the MANIFEST_UNKNOWN error when deleting image with digest, seems this is a well known issue within the docker-distribution pkg
+Reference here
 
-# Further improvements
+https://github.com/distribution/distribution/issues/1566
+
+https://betterprogramming.pub/cleanup-your-docker-registry-ef0527673e3a
+
+https://github.com/distribution/distribution/issues/1755
+
+
+# Further improvements - Main task
 
 0. Storage Option 1: Can change to use NFS + PVC ReadWriteMany when we have multiple nodes
 
@@ -427,6 +471,15 @@ time="2022-03-20T06:54:33.404872485Z" level=info msg="response completed" go.ver
 9. Can try to use Harbor, it has many featurs like: image scanning, retention policy, repo replication, avanced Auth config. It will be heavier in term of resources usage, however it provides more features for us
 
 10. We can write a helm chart for this to automate the whole deployment process
+
+# Further improvements - Optional task
+
+1. Improve the script to support json rule, no need to hard code the rules inside the script
+
+2. Build a Docker image then use K8s cronjob to run the retention script
+
+3. We can also try Harbor, which support retention policy by default
+
 
 # Reference
 
@@ -451,3 +504,4 @@ https://github.com/distribution/distribution/issues/1566
 https://betterprogramming.pub/cleanup-your-docker-registry-ef0527673e3a
 
 https://github.com/distribution/distribution/issues/1755
+
