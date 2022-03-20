@@ -33,7 +33,7 @@ spec:
                 path: config.yml
       containers:
         - name: registry
-          image: registry:2
+          image: registry:2.8.1
           ports:
             - name: http
               containerPort: 5000

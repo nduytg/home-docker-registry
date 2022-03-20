@@ -10,6 +10,8 @@ data:
       fields:
         service: registry
     storage:
+      delete:
+        enabled: true
       cache:
         blobdescriptor: redis
       filesystem:

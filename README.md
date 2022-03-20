@@ -408,7 +408,7 @@ time="2022-03-20T06:54:33.404872485Z" level=info msg="response completed" go.ver
 
 0. Storage Option 1: Can change to use NFS + PVC ReadWriteMany when we have multiple nodes
 
-1. Storage Option 2: Use [S3](https://docs.docker.com/registry/storage-drivers/) as backend driver for Docker registry
+1. Storage Option 2: Use [S3](https://docs.docker.com/registry/storage-drivers/) as backend driver for Docker registry. If we choose this one, may need to review the retention script
 
 2. Use dragonfly as daemon set on each node to speed up image distribution time & offload traffic to docker-registry
 
@@ -423,6 +423,10 @@ time="2022-03-20T06:54:33.404872485Z" level=info msg="response completed" go.ver
 7. Review the pod resources limit + namespace setup
 
 8. Do security hardening for the service
+
+9. Can try to use Harbor, it has many featurs like: image scanning, retention policy, repo replication, avanced Auth config. It will be heavier in term of resources usage, however it provides more features for us
+
+10. We can write a helm chart for this to automate the whole deployment process
 
 # Reference
 
@@ -441,3 +445,9 @@ https://github.com/marketplace/actions/yamllint-github-action
 https://kubernetes.github.io/ingress-nginx/examples/docker-registry/
 
 https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/
+
+https://github.com/distribution/distribution/issues/1566
+
+https://betterprogramming.pub/cleanup-your-docker-registry-ef0527673e3a
+
+https://github.com/distribution/distribution/issues/1755
