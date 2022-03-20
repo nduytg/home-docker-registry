@@ -14,7 +14,7 @@ spec:
   tls:
     - hosts:
         - registry.duy.io
-      secretName: registry-tls
+      secretName: registry-ingress
   rules:
     - host: registry.duy.io
       http:

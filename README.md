@@ -12,9 +12,10 @@ Write the Kubernetes deployment manifest to run Docker Registry in Kubernetes wi
 - [x] service
 - [x] persistent volume claim
 - [x] garbage collect cron job
-- [ ] ingress
+- [x] ingress
 - [x] secret (if needed). 
-- [x] configmap (added)
+- [] Redis
+- [] Increase replica count
 
 ## Preparation - Setup local K8s env by Minikube
 
@@ -225,7 +226,113 @@ docker run \
 # Create secret for auth file
 k create secret generic registry-htpasswd --from-file=./auth/htpasswd
 
+```
 
+## Enable Ingress controller for minikube
+
+In our case, we use local minikube env, so we need to enable ingress add-on for minikube
+
+```bash
+# Enable add-on
+minikube addons enable ingress
+
+# Check if ingress is running
+kubectl get pods -n ingress-nginx
+```
+
+Ok, now we need to define the ruleset for our newly created Ingress
+
+Create the Ingress object by running the following command:
+
+```bash
+k apply -f docker-registry/ingress-registry.yaml
+
+#The output should be:
+ingress.networking.k8s.io/ingress-registry created
+
+```
+Verify the IP address is set:
+
+```bash
+❯ kubectl get ingress
+NAME              CLASS   HOSTS             ADDRESS        PORTS     AGE
+docker-registry   nginx   registry.duy.io   192.168.64.3   80, 443   13h
+
+# Set this in your local /etc/hosts file
+192.168.64.3 registry.duy.io 
+
+# Access the domain from your laptop browser
+registry.duy.io
+```
+
+We will encounter invalid cert error if we use the Ingress cert out of the box
+
+```bash
+❯ docker tag ubuntu:16.04 registry.duy.io/ubuntu:16.04
+❯ docker push registry.duy.io/ubuntu:16.04
+The push refers to repository [registry.duy.io/ubuntu]
+Get "https://registry.duy.io/v2/": x509: certificate is valid for ingress.local, not r
+egistry.duy.io
+❯ docker push registry.duy.io/ubuntu:16.04
+The push refers to repository [registry.duy.io/ubuntu]
+Get "https://registry.duy.io/v2/": x509: certificate is valid for ingress.local, not registry.duy.io
+```
+
+We need to create new certs (the same way we did with the cert in registry deployment), but this time for ingress
+
+Let's go!!
+
+```
+# Create cert by openssl
+openssl req -newkey rsa:4096 -nodes -keyout ./ingress-certs/registry-ingress.key -x509 -days 365 -out ./ingress-certs/registry-ingress.crt -subj "/CN=registry.duy.io/O=registry.duy.io"
+
+# Create new secret
+kubectl create secret tls registry-ingress --key ./ingress-certs/registry-ingress.key --cert ./ingress-certs/registry-ingress.crt
+```
+
+Replace default secret in ingress config with new secret we just created
+```yaml
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - registry.duy.io
+      secretName: registry-ingress
+```
+
+Try to run docker push command again, we encounter this error
+```
+❯ docker push registry.duy.io/ubuntu:16.04
+The push refers to repository [registry.duy.io/ubuntu]
+Get "https://registry.duy.io/v2/": x509: certificate relies on legacy Common Name field, use SANs or temporarily enable Common Name matching with GODEBUG=x509ignoreCN=0
+```
+
+Need to import the cert into Mac Keychain Access
+
+Also need to add the following settings into your docker daemon config => Reload docker daemon
+
+```json
+  "insecure-registries" : ["registry.duy.io"],
+```
+
+
+Retry => Profit!!
+
+```bash
+# Before
+❯ docker push registry.duy.io/ubuntu:16.04
+The push refers to repository [registry.duy.io/ubuntu]
+Get "https://registry.duy.io/v2/": x509: certificate relies on legacy Common Name field, use SANs or temporarily enable Common Name matching with GODEBUG=x509ignoreCN=0
+
+# After ;) (remember to relogin to new domain before you run this though)
+❯ docker login -u duyuser -p password123456 registry.duy.io
+❯ docker push registry.duy.io/ubuntu:16.04
+The push refers to repository [registry.duy.io/ubuntu]
+1251204ef8fc: Pushed 
+47ef83afae74: Pushed 
+df54c846128d: Pushed 
+be96a3f634de: Pushed 
+16.04: digest: sha256:a3785f78ab8547ae2710c89e627783cfa7ee7824d3468cae6835c9f4eae23ff7 size: 1150
 ```
 
 ## Redis configuration + Replica set
@@ -240,14 +347,22 @@ If the registry is empty, the cronjob will fail!!!
 
 # Further improvements
 
-Use [S3](https://docs.docker.com/registry/storage-drivers/) as backend driver for Docker registry
+1. Use [S3](https://docs.docker.com/registry/storage-drivers/) as backend driver for Docker registry
 
-Use dragonfly as daemon set on each node to speed up image distribution time & offload traffic to docker-registry
+2. Use dragonfly as daemon set on each node to speed up image distribution time & offload traffic to docker-registry
+
+3. Set ACL for ingress + docker registry to only accept internal traffic
+
+4. Enable auto-scaling by prometheus + KEDA
+
+5. Change the Auth method to Token, instead of htpasswd
+
+6. Enable Docker proxy feature, cache dockerhub image on local to avoid the Dockerhub rate limit issue
 
 # TODO
-1. Add yaml lint checker
-2. Add Github actions
-3. Add prehooks
+1. Add yaml lint checker (done)
+2. Add Github actions (done)
+
 
 
 # Reference
@@ -265,3 +380,5 @@ https://docs.docker.com/registry/garbage-collection/
 https://github.com/marketplace/actions/yamllint-github-action
 
 https://kubernetes.github.io/ingress-nginx/examples/docker-registry/
+
+https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/

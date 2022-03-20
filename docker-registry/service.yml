@@ -8,5 +8,5 @@ spec:
   selector:
     app: docker-registry
   ports:
-    - port: 8080
+    - port: 5000
       targetPort: 5000

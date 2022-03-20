@@ -30,6 +30,8 @@ spec:
         - name: registry
           image: registry:2
           env:
+            - name: REGISTRY_HTTP_ADDR
+              value: ":5000"
             - name: REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY
               value: "/var/lib/registry"
             - name: REGISTRY_AUTH
@@ -38,12 +40,13 @@ spec:
               value: "Registry Realm"
             - name: REGISTRY_AUTH_HTPASSWD_PATH
               value: /auth/htpasswd
-            - name: REGISTRY_HTTP_TLS_CERTIFICATE
-              value: /certs/registry.crt
-            - name: REGISTRY_HTTP_TLS_KEY
-              value: /certs/registry.key
+            #- name: REGISTRY_HTTP_TLS_CERTIFICATE
+            #  value: /certs/registry.crt
+            #- name: REGISTRY_HTTP_TLS_KEY
+            #  value: /certs/registry.key
           ports:
-            - containerPort: 5000
+            - name: http
+              containerPort: 5000
           volumeMounts:
             - name: docker-registry-storage
               mountPath: /var/lib/registry
