@@ -5,6 +5,16 @@ Author: nduytg@gmail.com
 
 Github: [github.com/nduytg](github.com/nduytg)
 
+## Quick start
+
+```bash
+# Start minikube with virtualbox driver, wait for 5mins
+minikube start --driver=virtualbox
+
+k apply -f redis/
+k apply -f docker-registry/
+```
+
 ## Requirements
 
 Write the Kubernetes deployment manifest to run Docker Registry in Kubernetes with at least the following resources:
@@ -386,12 +396,9 @@ time="2022-03-20T06:54:33.490089529Z" level=info msg="response completed" go.ver
 time="2022-03-20T06:54:33.404872485Z" level=info msg="response completed" go.version=go1.16.15 http.request.host=registry.duy.io http.request.id=667435cf-420d-4c04-80fc-f9e211673b31 http.request.method=PATCH http.request.remoteaddr=192.168.64.1 http.request.uri="/v2/grafana/blobs/uploads/4ce77739-d321-45be-b0b1-4949208c0743?_state=3ET9AKLzACngAL8hRjVGHMtQYKZA6eW_LmUroIL_yIV7Ik5hbWUiOiJncmFmYW5hIiwiVVVJRCI6IjRjZTc3NzM5LWQzMjEtNDViZS1iMGIxLTQ5NDkyMDhjMDc0MyIsIk9mZnNldCI6MCwiU3RhcnRlZEF0IjoiMjAyMi0wMy0yMFQwNjo1NDozMy4zNzA4NzM4MDlaIn0%3D" http.request.useragent="docker/20.10.8 go/go1.16.6 git-commit/75249d8 kernel/5.10.47-linuxkit os/linux arch/amd64 UpstreamClient(Docker-Client/20.10.8 \(darwin\))" http.response.duration=5.384046ms http.response.status=202 http.response.written=0
 ```
 
-## Notes
-
-If the registry is empty, the cronjob will fail!!!
-
 # Encountered issues
 1. Minikube does not expose the service port correctly by default on Mac. It always return 127.0.0.1 as external IP. We can force it to use virtualbox driver to fix this. Source: https://github.com/kubernetes/minikube/issues/7344
+2. If the registry is empty, the GC cronjob will fail!! Because there is no docker directory in that volume yet!
 
 # Further improvements
 
@@ -408,12 +415,6 @@ If the registry is empty, the cronjob will fail!!!
 5. Change the Auth method to Token, instead of htpasswd
 
 6. Enable Docker proxy feature, cache dockerhub image on local to avoid the Dockerhub rate limit issue
-
-# TODO
-1. Add yaml lint checker (done)
-2. Add Github actions (done)
-
-
 
 # Reference
 
