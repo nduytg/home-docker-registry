@@ -21,7 +21,7 @@ spec:
             claimName: docker-registry-pvc
         - name: secret-volume
           secret:
-            secretName: registry-certs-keys 
+            secretName: registry-certs-keys
         - name: auth-volume
           secret:
             secretName: registry-htpasswd
@@ -39,7 +39,7 @@ spec:
             - name: REGISTRY_AUTH_HTPASSWD_PATH
               value: /auth/htpasswd
             - name: REGISTRY_HTTP_TLS_CERTIFICATE
-              value: /certs/registry.crt 
+              value: /certs/registry.crt
             - name: REGISTRY_HTTP_TLS_KEY
               value: /certs/registry.key
           ports:
