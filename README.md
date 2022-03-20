@@ -438,14 +438,13 @@ Otherwise, we can also delete the disk space manually by ourselves, based on the
 # Encountered issues
 1. Minikube does not expose the service port correctly by default on Mac. It always return 127.0.0.1 as external IP. We can force it to use virtualbox driver to fix this. Source: https://github.com/kubernetes/minikube/issues/7344
 2. If the registry is empty, the GC cronjob will fail!! Because there is no docker directory in that volume yet!
-3. Encountering the MANIFEST_UNKNOWN error when deleting image with digest, seems this is a well known issue within the docker-distribution pkg
-Reference here
+3. Encountering the MANIFEST_UNKNOWN error when deleting image with digest, seems this is a well known issue within the docker-distribution pkg. Reference below
 
-https://github.com/distribution/distribution/issues/1566
+* https://github.com/distribution/distribution/issues/1566
 
-https://betterprogramming.pub/cleanup-your-docker-registry-ef0527673e3a
+* https://betterprogramming.pub/cleanup-your-docker-registry-ef0527673e3a
 
-https://github.com/distribution/distribution/issues/1755
+* https://github.com/distribution/distribution/issues/1755
 
 
 # Further improvements - Main task
