@@ -40,10 +40,10 @@ spec:
               value: "Registry Realm"
             - name: REGISTRY_AUTH_HTPASSWD_PATH
               value: /auth/htpasswd
-            #- name: REGISTRY_HTTP_TLS_CERTIFICATE
-            #  value: /certs/registry.crt
-            #- name: REGISTRY_HTTP_TLS_KEY
-            #  value: /certs/registry.key
+              # - name: REGISTRY_HTTP_TLS_CERTIFICATE
+              #   value: /certs/registry.crt
+              # - name: REGISTRY_HTTP_TLS_KEY
+              #   value: /certs/registry.key
           ports:
             - name: http
               containerPort: 5000
