@@ -157,7 +157,7 @@ Quick notes
 In a production cluster, you would not use hostPath. Instead a cluster administrator would provision a network resource like a Google Compute Engine persistent disk, an NFS share, or an Amazon Elastic Block Store volume. Cluster administrators can also use StorageClasses to set up dynamic provisioning.
 ```
 
-But in this case, we will use HostPath PV to simplify the process
+But in this case, we will use `HostPath` PV to simplify the process
 
 Create PV, PVC
 ```yaml
@@ -258,7 +258,7 @@ k create secret generic registry-htpasswd --from-file=./auth/htpasswd
 
 ## Enable Ingress controller for minikube
 
-In our case, we use local minikube env, so we need to enable ingress add-on for minikube
+In our case, we use local minikube env, so we need to enable `ingress add-on` for minikube
 
 ```bash
 # Enable add-on
@@ -335,14 +335,13 @@ The push refers to repository [registry.duy.io/ubuntu]
 Get "https://registry.duy.io/v2/": x509: certificate relies on legacy Common Name field, use SANs or temporarily enable Common Name matching with GODEBUG=x509ignoreCN=0
 ```
 
-Need to import the cert into Mac Keychain Access
+Need to import the cert into `Mac Keychain Access` (if you are a Mac user)
 
-Also need to add the following settings into your docker daemon config => Reload docker daemon
+Also need to add the following settings into your local docker daemon config => Then reload docker daemon
 
 ```json
   "insecure-registries" : ["registry.duy.io"],
 ```
-
 
 Retry => Profit!!
 
@@ -376,9 +375,9 @@ be96a3f634de: Pushed
 ```
 
 Important notes for Redis configuration to make it work with multiple replicas
-* Need to set a HTTP secret
-* Set storage.cache.blobdescriptor: redis
-* Set redis addr in registry configuration
+* Need to set a shared `HTTP secret` between replicas
+* Set `storage.cache.blobdescriptor: redis`
+* Set `redis addr` in registry configuration
 
 ```bash
 k apply -f docker-registry/registry-config.yml
@@ -416,7 +415,7 @@ time="2022-03-20T06:54:33.404872485Z" level=info msg="response completed" go.ver
 
 ## Retention script
 
-Write retention script to clean old tags/images
+Write `retention script` to clean old tags/images
 
 ### How to use
 
