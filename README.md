@@ -6,7 +6,7 @@ Have you ever been wondering that how Dockerhub works and what is the technologi
 
 This home lab will help you to learn more about Docker image distribution and how it works behind the scene (on K8s, of course!).
 
-Build your own local Docker Hub on K8s from scratch on your laptop.
+Then let's start building your own local Docker Hub home lab on K8s from scratch!
 
 Repo layout
 * `docker-registry`: this directory contains all related yaml files for setting up Docker registry
@@ -445,7 +445,7 @@ How the script works
 3. Get all tags of that repo
 4. Delete (total_tags - num_latest_tags)
 
-After deleting the tag, we can wait for the GC to clear the image layers that are no longer being refered to.
+After deleting the tag, we can wait for the `GC cronjob` to clear the image layers that are `no longer being refered` to.
 
 ### Improvements
 1. Improve the script to support json rule, no need to hard code the rules inside the script
@@ -453,9 +453,9 @@ After deleting the tag, we can wait for the GC to clear the image layers that ar
 2. Build a Docker image then use K8s cronjob to run the retention script
 
 # Notable issues
-1. Minikube does not expose the service port correctly by default on Mac. It always return 127.0.0.1 as external IP. We can force it to use virtualbox driver to fix this. Source: https://github.com/kubernetes/minikube/issues/7344
-2. If the registry is empty, the GC cronjob will fail!! Because there is no docker directory in that volume yet!
-3. Encountering the MANIFEST_UNKNOWN error when deleting image with digest, seems this is a well known issue within the docker-distribution pkg. Reference below
+1. Minikube `does not expose the service port correctly` by default on Mac. It always return 127.0.0.1 as external IP. We can force it to use `virtualbox driver`to fix this. Source: https://github.com/kubernetes/minikube/issues/7344
+2. If the registry is empty, the `GC cronjob` will fail!! Because there is no docker directory in that volume yet!
+3. Encountering the `MANIFEST_UNKNOWN` error when deleting image with digest, seems this is a well known issue within the docker-distribution pkg. Reference below
     * https://github.com/distribution/distribution/issues/1566
     * https://betterprogramming.pub/cleanup-your-docker-registry-ef0527673e3a
     * https://github.com/distribution/distribution/issues/1755
