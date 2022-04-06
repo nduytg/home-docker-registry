@@ -431,8 +431,10 @@ Build binary (need to set env for different OSes)
 cd retention-script
 mkdir bin
 
+# Build binary for Mac
 env GOOS=darmin GOARCH=amd64 go build -o ./bin/retention ./main.go
 
+# Buil binary for Linux
 env GOOS=linux GOARCH=amd64 go build -o ./bin/retention ./main.go
 ```
 
@@ -445,7 +447,7 @@ How the script works
 
 After deleting the tag, we can wait for the GC to clear the image layers that are no longer being refered to.
 
-### Further improvements
+### Improvements
 1. Improve the script to support json rule, no need to hard code the rules inside the script
 
 2. Build a Docker image then use K8s cronjob to run the retention script
@@ -458,7 +460,7 @@ After deleting the tag, we can wait for the GC to clear the image layers that ar
     * https://betterprogramming.pub/cleanup-your-docker-registry-ef0527673e3a
     * https://github.com/distribution/distribution/issues/1755
 
-# Further improvements
+# Further improvements / TODOs
 
 After you have finished the main tasks above, you can try the following ideas to improve your setup (and open a PR back to this repo :D)
 
@@ -478,11 +480,11 @@ After you have finished the main tasks above, you can try the following ideas to
 
 7. Review the pod resources limit + namespace setup
 
-8. Do security hardening for our services
+8. Do `security` hardening for our services
 
 9. Can try to use Harbor, it has many featurs like: `image scanning`, `retention policy`, `image replication`, avanced `Auth config`. It will be heavier in term of resources usage, however it provides more features for us
 
-10. We can write a helm chart for this to automate the whole deployment process.
+10. We can write a `Helm` chart for this to automate the whole deployment process.
 
 11. Use `cert-manager` to automate the SSL cert management process
 
