@@ -1,7 +1,7 @@
 name: 'YamlLint'
 on:
   push:
-    branches: [ "duyn/add-github-actions", "master" ]
+    branches: [ "main" ]
 jobs:
   yamllint:
     name: 'Yamllint'

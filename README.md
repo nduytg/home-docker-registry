@@ -1,15 +1,30 @@
-# home-docker-registry
-Build your own Docker Registry on K8s from scratch
+# Dockerhub local registry home lab
 
-Author: nduytg@gmail.com
+## Introduction
 
-Github: [github.com/nduytg](github.com/nduytg)
+Have you ever been wondering that how Dockerhub works and what is the technologies run behind it.
+
+This home lab will help you to learn more about Docker image distribution and how it works behind the scene (on K8s, of course!).
+
+Build your own local Docker Hub on K8s from scratch on your laptop.
+
+Repo layout
+* `docker-registry`: this directory contains all related yaml files for setting up Docker registry
+* `redis`: for setting up Redis service
+* `retention-script`: a simple golang script to help clean up old images based on our policies
+* `ingress-certs`: self-signed certs for ingress
+* `.github`: Github action to help check yaml file lint errors
 
 ## Quick start
+
+TL;DR: If you dont have time to follow this step by step, then you can run the following commands to kick-start your own cluster and Docker registry
 
 ```bash
 # Start minikube with virtualbox driver, wait for 5mins
 minikube start --driver=virtualbox
+
+# Enable minikube ingress addon to allow traffic to go through service
+minikube addons enable ingress
 
 # Create new secrets
 kubectl create secret tls registry-ingress --key ./ingress-certs/registry-ingress.key --cert ./ingress-certs/registry-ingress.crt
@@ -21,19 +36,21 @@ k apply -f docker-registry/
 
 ## Requirements
 
-Write the Kubernetes deployment manifest to run Docker Registry in Kubernetes with at least the following resources:
+To make the Docker registry fully operational and highly available, we will need the following components in our system
 - [x] deployment
 - [x] service
 - [x] persistent volume claim
 - [x] garbage collect cron job
 - [x] ingress
-- [x] secret (if needed). 
-- [x] Redis
-- [x] Increase replicas
+- [x] secret
+- [x] redis
+- [x] high availability
+- [x] scaling on demand
+- [x] bonus: github actions to do lint checks on our yaml files!
 
 ## Preparation - Setup local K8s env by Minikube
 
-To simplify the installation steps, we will use mini
+To simplify the installation steps, we will use minikube to setup a local cluster on your laptop
 
 ```bash
 # Download minikube
@@ -41,6 +58,7 @@ curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-darwin
 sudo install minikube-darwin-amd64 /usr/local/bin/minikube
 
 # Start minikube with virtualbox driver, wait for 5mins
+# And why we use virtualbox driver, but not docker driver will be explained below
 minikube start --driver=virtualbox
 
 # Check if the cluster is up and running
@@ -53,6 +71,8 @@ kube-system   kube-controller-manager-minikube   1/1     Running   0            
 kube-system   kube-proxy-h9z2r                   1/1     Running   0             90s
 kube-system   kube-scheduler-minikube            1/1     Running   0             100s
 kube-system   storage-provisioner                1/1     Running   1 (58s ago)   98s
+
+# Cool! So our cluster is up and running now!
 
 # Set alias for minikube
 # Add this in your bash profile
@@ -79,11 +99,6 @@ http://127.0.0.1:52948/api/v1/namespaces/kubernetes-dashboard/services/http:kube
 
 ```bash
 k apply -f docker-registry/deployment.yml
-```
-
-Deployment file
-```yaml
-TODO: Put contents here after we finish
 ```
 
 ## Create service to access the app from localhost
@@ -136,7 +151,7 @@ health:
 
 ## PV & PVC
 
-Notes
+Quick notes
 
 ```
 In a production cluster, you would not use hostPath. Instead a cluster administrator would provision a network resource like a Google Compute Engine persistent disk, an NFS share, or an Amazon Elastic Block Store volume. Cluster administrators can also use StorageClasses to set up dynamic provisioning.
@@ -226,7 +241,7 @@ k apply -f docker-registry/deployment.yml
 ## Create self-signed cert
 
 ```bash
-# Create certs
+# Create self-signed certs
 openssl req -newkey rsa:4096 -nodes -keyout ./certs/registry.key -x509 -days 365 -out ./certs/registry.crt
 
 # Create secrets
@@ -239,7 +254,6 @@ docker run \
 
 # Create secret for auth file
 k create secret generic registry-htpasswd --from-file=./auth/htpasswd
-
 ```
 
 ## Enable Ingress controller for minikube
@@ -400,9 +414,9 @@ time="2022-03-20T06:54:33.490089529Z" level=info msg="response completed" go.ver
 time="2022-03-20T06:54:33.404872485Z" level=info msg="response completed" go.version=go1.16.15 http.request.host=registry.duy.io http.request.id=667435cf-420d-4c04-80fc-f9e211673b31 http.request.method=PATCH http.request.remoteaddr=192.168.64.1 http.request.uri="/v2/grafana/blobs/uploads/4ce77739-d321-45be-b0b1-4949208c0743?_state=3ET9AKLzACngAL8hRjVGHMtQYKZA6eW_LmUroIL_yIV7Ik5hbWUiOiJncmFmYW5hIiwiVVVJRCI6IjRjZTc3NzM5LWQzMjEtNDViZS1iMGIxLTQ5NDkyMDhjMDc0MyIsIk9mZnNldCI6MCwiU3RhcnRlZEF0IjoiMjAyMi0wMy0yMFQwNjo1NDozMy4zNzA4NzM4MDlaIn0%3D" http.request.useragent="docker/20.10.8 go/go1.16.6 git-commit/75249d8 kernel/5.10.47-linuxkit os/linux arch/amd64 UpstreamClient(Docker-Client/20.10.8 \(darwin\))" http.response.duration=5.384046ms http.response.status=202 http.response.written=0
 ```
 
-## Optional task
+## Retention script
 
-Write retention script to clean old tags
+Write retention script to clean old tags/images
 
 ### How to use
 
@@ -423,84 +437,65 @@ env GOOS=darmin GOARCH=amd64 go build -o ./bin/retention ./main.go
 env GOOS=linux GOARCH=amd64 go build -o ./bin/retention ./main.go
 ```
 
-### Ideas
-Some ideas for the retention scripts
+How the script works
 
 1. Define a rule list for each service, how many latest tags we will keep
 2. Scan through all repo, if the repo in the rule list
 3. Get all tags of that repo
 4. Delete (total_tags - num_latest_tags)
 
-After deleting the tag, we can wait for the GC to collect the disk space
+After deleting the tag, we can wait for the GC to clear the image layers that are no longer being refered to.
 
-Otherwise, we can also delete the disk space manually by ourselves, based on the digest of images
-
-# Encountered issues
-1. Minikube does not expose the service port correctly by default on Mac. It always return 127.0.0.1 as external IP. We can force it to use virtualbox driver to fix this. Source: https://github.com/kubernetes/minikube/issues/7344
-2. If the registry is empty, the GC cronjob will fail!! Because there is no docker directory in that volume yet!
-3. Encountering the MANIFEST_UNKNOWN error when deleting image with digest, seems this is a well known issue within the docker-distribution pkg. Reference below
-
-* https://github.com/distribution/distribution/issues/1566
-
-* https://betterprogramming.pub/cleanup-your-docker-registry-ef0527673e3a
-
-* https://github.com/distribution/distribution/issues/1755
-
-
-# Further improvements - Main task
-
-0. Storage Option 1: Can change to use NFS + PVC ReadWriteMany when we have multiple nodes
-
-1. Storage Option 2: Use [S3](https://docs.docker.com/registry/storage-drivers/) as backend driver for Docker registry. If we choose this one, may need to review the retention script
-
-2. Use dragonfly as daemon set on each node to speed up image distribution time & offload traffic to docker-registry
-
-3. Set ACL for ingress + docker registry to only accept internal traffic
-
-4. Enable auto-scaling by prometheus + KEDA
-
-5. Change the Auth method to Token, instead of htpasswd
-
-6. Enable Docker proxy feature, cache dockerhub image on local to avoid the Dockerhub rate limit issue
-
-7. Review the pod resources limit + namespace setup
-
-8. Do security hardening for the service
-
-9. Can try to use Harbor, it has many featurs like: image scanning, retention policy, repo replication, avanced Auth config. It will be heavier in term of resources usage, however it provides more features for us
-
-10. We can write a helm chart for this to automate the whole deployment process
-
-# Further improvements - Optional task
-
+### Further improvements
 1. Improve the script to support json rule, no need to hard code the rules inside the script
 
 2. Build a Docker image then use K8s cronjob to run the retention script
 
-3. We can also try Harbor, which support retention policy by default
+# Notable issues
+1. Minikube does not expose the service port correctly by default on Mac. It always return 127.0.0.1 as external IP. We can force it to use virtualbox driver to fix this. Source: https://github.com/kubernetes/minikube/issues/7344
+2. If the registry is empty, the GC cronjob will fail!! Because there is no docker directory in that volume yet!
+3. Encountering the MANIFEST_UNKNOWN error when deleting image with digest, seems this is a well known issue within the docker-distribution pkg. Reference below
+    * https://github.com/distribution/distribution/issues/1566
+    * https://betterprogramming.pub/cleanup-your-docker-registry-ef0527673e3a
+    * https://github.com/distribution/distribution/issues/1755
 
+# Further improvements
+
+After you have finished the main tasks above, you can try the following ideas to improve your setup (and open a PR back to this repo :D)
+
+0. Storage Option 1: Can change to use `NFS` + `PVC ReadWriteMany` when we have multiple nodes
+
+1. Storage Option 2: Use [S3](https://docs.docker.com/registry/storage-drivers/) as backend driver for Docker registry, this will help the system scale better. If we choose this one, may need to review the retention script logic to make it work with `S3` storage layout
+
+2. Use `dragonfly` as daemon set on each node to speed up image distribution time & offload traffic to docker-registry by using `P2P network`. This works really well in large scale environment when you need to deploy thousand containers at a time
+
+3. Set ACL for ingress + docker registry to only accept internal traffic
+
+4. Enable auto-scaling by `Prometheus` + `KEDA`
+
+5. Change the Auth method to `Token`, instead of `htpasswd`
+
+6. Enable `Docker proxy` feature, cache `Dockerhub` image on local to avoid the Dockerhub rate limit issue.
+
+7. Review the pod resources limit + namespace setup
+
+8. Do security hardening for our services
+
+9. Can try to use Harbor, it has many featurs like: `image scanning`, `retention policy`, `image replication`, avanced `Auth config`. It will be heavier in term of resources usage, however it provides more features for us
+
+10. We can write a helm chart for this to automate the whole deployment process.
+
+11. Use `cert-manager` to automate the SSL cert management process
 
 # Reference
 
-Reference documents for the assignment
-
-https://docs.docker.com/registry/
-
-https://docs.docker.com/registry/storage-drivers/
-
-https://hub.docker.com/_/registry
-
-https://docs.docker.com/registry/garbage-collection/
-
-https://github.com/marketplace/actions/yamllint-github-action
-
-https://kubernetes.github.io/ingress-nginx/examples/docker-registry/
-
-https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/
-
-https://github.com/distribution/distribution/issues/1566
-
-https://betterprogramming.pub/cleanup-your-docker-registry-ef0527673e3a
-
-https://github.com/distribution/distribution/issues/1755
-
+* https://docs.docker.com/registry/
+* https://docs.docker.com/registry/storage-drivers/
+* https://hub.docker.com/_/registry
+* https://docs.docker.com/registry/garbage-collection/
+* https://github.com/marketplace/actions/yamllint-github-action
+* https://kubernetes.github.io/ingress-nginx/examples/docker-registry/
+* https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/
+* https://github.com/distribution/distribution/issues/1566
+* https://betterprogramming.pub/cleanup-your-docker-registry-ef0527673e3a
+* https://github.com/distribution/distribution/issues/1755

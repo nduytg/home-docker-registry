@@ -16,6 +16,6 @@
 .vscode/
 
 .DS_Store
-
 reference/
 bin/
+.vscode/
