@@ -15,6 +15,12 @@ Repo layout
 * `ingress-certs`: self-signed certs for ingress
 * `.github`: Github action to help check yaml file lint errors
 
+## Requirements
+
+You can download minikube and Virtualbox from here
+* [minikube](https://minikube.sigs.k8s.io/docs/start/)
+* [Virtualbox](https://www.virtualbox.org/wiki/Downloads)
+
 ## Quick start
 
 TL;DR: If you dont have time to follow this step by step, then you can run the following commands to kick-start your own cluster and Docker registry
